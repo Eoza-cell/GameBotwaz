@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Bot - QR Code</title>
+    <title>COMBAT WARFARE - QR CODE</title>
     <script src="/socket.io/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,84 +14,216 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0a url('/background.jpg') center center/cover no-repeat fixed;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
+            color: #00ff00;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.03) 2px, rgba(0,255,0,0.03) 4px),
+                linear-gradient(135deg, rgba(10,10,10,0.92) 0%, rgba(26,26,26,0.85) 50%, rgba(15,26,15,0.88) 100%),
+                radial-gradient(ellipse at top, rgba(255,136,0,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(0,255,0,0.1) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .container {
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid #ff8800;
+            border-image: linear-gradient(135deg, #ff8800, #00ff00, #ff8800) 1;
             padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
+            position: relative;
+            box-shadow: 
+                0 0 30px rgba(255, 136, 0, 0.3),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #ff8800, #00ff00, #ff8800);
+            z-index: -1;
+            filter: blur(10px);
+            opacity: 0.3;
+        }
+
+        .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ff8800;
+        }
+
+        .corner.top-left {
+            top: -2px;
+            left: -2px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .corner.top-right {
+            top: -2px;
+            right: -2px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .corner.bottom-left {
+            bottom: -2px;
+            left: -2px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .corner.bottom-right {
+            bottom: -2px;
+            right: -2px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .title-container {
+            margin-bottom: 30px;
         }
 
         h1 {
-            margin-bottom: 20px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff8800, #ffaa00, #ff8800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 136, 0, 0.5);
+            letter-spacing: 4px;
+            margin-bottom: 5px;
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        .emoji {
-            font-size: 4em;
-            margin-bottom: 20px;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #00ff00;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
 
         .qr-container {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
+            background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+            padding: 25px;
             margin: 30px auto;
             display: inline-block;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 2px solid #00ff00;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 0, 0.3),
+                inset 0 0 20px rgba(0, 255, 0, 0.05);
+            position: relative;
+        }
+
+        .qr-container::before {
+            content: 'SCAN TO DEPLOY';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a0a0a;
+            padding: 5px 15px;
+            font-size: 0.8em;
+            color: #ff8800;
+            font-weight: 700;
+            letter-spacing: 2px;
         }
 
         #qr-code {
-            max-width: 300px;
+            max-width: 280px;
             width: 100%;
             height: auto;
+            display: block;
         }
 
         .status {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            font-size: 1.1em;
+            margin-top: 25px;
+            padding: 15px 25px;
+            background: linear-gradient(90deg, rgba(255,136,0,0.1), rgba(0,255,0,0.1), rgba(255,136,0,0.1));
+            border-left: 4px solid #ff8800;
+            font-size: 1.2em;
+            font-weight: 600;
+            letter-spacing: 1px;
         }
 
         .connected {
-            color: #4ade80;
-            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            animation: glow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+            50% { text-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
         }
 
         .waiting {
-            color: #fbbf24;
-            font-weight: bold;
+            color: #ff8800;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
         .instructions {
-            margin-top: 20px;
-            font-size: 0.9em;
-            opacity: 0.9;
-            line-height: 1.6;
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 136, 0, 0.05);
+            border: 1px solid rgba(255, 136, 0, 0.3);
+            font-size: 0.95em;
+            line-height: 1.8;
+        }
+
+        .instructions strong {
+            color: #ff8800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .instructions p {
+            color: #aaa;
         }
 
         .loading {
             display: inline-block;
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 255, 0, 0.1);
             border-radius: 50%;
-            border-top-color: white;
+            border-top-color: #00ff00;
+            border-right-color: #ff8800;
             animation: spin 1s linear infinite;
         }
 
@@ -100,15 +233,21 @@
 
         .game-info {
             margin-top: 30px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(255,136,0,0.05), rgba(0,255,0,0.05));
+            border: 1px solid rgba(0, 255, 0, 0.3);
             text-align: left;
         }
 
         .game-info h3 {
-            margin-bottom: 15px;
-            color: #fbbf24;
+            margin-bottom: 20px;
+            color: #ff8800;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #ff8800;
+            padding-bottom: 10px;
         }
 
         .game-info ul {
@@ -117,45 +256,102 @@
         }
 
         .game-info li {
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 3px solid #00ff00;
+            font-size: 1.1em;
+            transition: all 0.3s;
         }
 
-        .game-info li:last-child {
-            border-bottom: none;
+        .game-info li:hover {
+            background: rgba(0, 255, 0, 0.1);
+            transform: translateX(5px);
         }
+
+        .game-info strong {
+            color: #00ff00;
+            font-weight: 700;
+        }
+
+        .hud-line {
+            position: absolute;
+            background: #ff8800;
+            opacity: 0.3;
+        }
+
+        .hud-line.top {
+            top: 10px;
+            left: 50px;
+            right: 50px;
+            height: 1px;
+        }
+
+        .hud-line.bottom {
+            bottom: 10px;
+            left: 50px;
+            right: 50px;
+            height: 1px;
+        }
+
+        .hud-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ff8800;
+            border-radius: 50%;
+        }
+
+        .hud-dot.tl { top: 10px; left: 10px; }
+        .hud-dot.tr { top: 10px; right: 10px; }
+        .hud-dot.bl { bottom: 10px; left: 10px; }
+        .hud-dot.br { bottom: 10px; right: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="emoji">🎮</div>
-        <h1>Bot WhatsApp de Combat</h1>
+        <div class="corner top-left"></div>
+        <div class="corner top-right"></div>
+        <div class="corner bottom-left"></div>
+        <div class="corner bottom-right"></div>
+        
+        <div class="hud-line top"></div>
+        <div class="hud-line bottom"></div>
+        <div class="hud-dot tl"></div>
+        <div class="hud-dot tr"></div>
+        <div class="hud-dot bl"></div>
+        <div class="hud-dot br"></div>
+
+        <div class="title-container">
+            <h1>COMBAT WARFARE</h1>
+            <div class="subtitle">▰ WhatsApp Tactical Ops ▰</div>
+        </div>
         
         <div class="qr-container" id="qr-container">
             <div class="loading"></div>
         </div>
         
         <div class="status" id="status">
-            <span class="waiting">⏳ En attente du QR Code...</span>
+            <span class="waiting">⚠ WAITING FOR QR CODE...</span>
         </div>
 
         <div class="instructions">
-            <p><strong>Instructions:</strong></p>
-            <p>1. Ouvrez WhatsApp sur votre téléphone</p>
-            <p>2. Allez dans Paramètres > Appareils connectés</p>
-            <p>3. Scannez le QR code ci-dessus</p>
+            <p><strong>⚡ Deployment Instructions:</strong></p>
+            <p>1. Open WhatsApp on mobile device</p>
+            <p>2. Navigate to Settings > Linked Devices</p>
+            <p>3. Scan the QR code above to deploy</p>
         </div>
 
         <div class="game-info">
-            <h3>🎯 Commandes du jeu:</h3>
+            <h3>⚔ TACTICAL COMMANDS</h3>
             <ul>
-                <li>📊 <strong>/statut</strong> - Voir votre statut</li>
-                <li>🔫 <strong>/tire [partie]</strong> - Tirer (répondre au message)</li>
-                <li>📍 <strong>/localisation</strong> - Se déplacer</li>
-                <li>🛒 <strong>/boutique</strong> - Voir les armes</li>
-                <li>💰 <strong>/acheter [id]</strong> - Acheter une arme</li>
-                <li>🔄 <strong>/equiper [id]</strong> - Équiper une arme</li>
-                <li>❓ <strong>/aide</strong> - Afficher l'aide</li>
+                <li>📊 <strong>/statut</strong> - View combat status</li>
+                <li>🔫 <strong>/tire [target]</strong> - Engage enemy (reply to message)</li>
+                <li>📍 <strong>/localisation</strong> - Relocate position</li>
+                <li>🛒 <strong>/boutique</strong> - Access armory</li>
+                <li>💰 <strong>/acheter [id]</strong> - Purchase weapon</li>
+                <li>🔄 <strong>/equiper [id]</strong> - Equip loadout</li>
+                <li>❓ <strong>/aide</strong> - Command briefing</li>
             </ul>
         </div>
     </div>
@@ -168,10 +364,10 @@
         socket.on('qr-update', (qrDataUrl) => {
             if (qrDataUrl) {
                 qrContainer.innerHTML = `<img id="qr-code" src="${qrDataUrl}" alt="QR Code">`;
-                statusDiv.innerHTML = '<span class="waiting">📱 Scannez le QR code avec WhatsApp</span>';
+                statusDiv.innerHTML = '<span class="waiting">📡 SCAN QR CODE TO CONNECT</span>';
             } else {
-                qrContainer.innerHTML = '<div style="padding: 60px; color: #4ade80; font-size: 3em;">✅</div>';
-                statusDiv.innerHTML = '<span class="connected">✅ Bot connecté avec succès!</span>';
+                qrContainer.innerHTML = '<div style="padding: 60px; color: #00ff00; font-size: 3em; text-shadow: 0 0 20px rgba(0,255,0,0.5);">✓ DEPLOYED</div>';
+                statusDiv.innerHTML = '<span class="connected">✓ TACTICAL LINK ESTABLISHED</span>';
             }
         });
 
@@ -180,7 +376,7 @@
         });
 
         socket.on('disconnect', () => {
-            statusDiv.innerHTML = '<span style="color: #ef4444;">❌ Déconnecté du serveur</span>';
+            statusDiv.innerHTML = '<span style="color: #ff0000; text-shadow: 0 0 10px rgba(255,0,0,0.5);">⚠ CONNECTION LOST</span>';
         });
     </script>
 </body>

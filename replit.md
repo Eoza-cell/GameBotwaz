@@ -1,16 +1,17 @@
 # Bot WhatsApp de Combat - Jeu de Tir
 
 ## Description
-Bot de jeu WhatsApp développé avec Baileys en Node.js. Les joueurs s'affrontent dans un système de combat avec des armes variées, un système de localisation et une économie de jeu.
+Bot de jeu WhatsApp développé avec Baileys en Node.js. Les joueurs s'affrontent dans un système de combat avec des armes variées, un système de localisation et une économie de jeu. Interface web style Call of Duty avec thème militaire/tactique.
 
 ## Fonctionnalités
 - 🔫 Système de combat avec zones de visée (tête, torse, bras, jambes, pieds)
-- 🎯 Catalogue d'armes complet (pistolets, fusils d'assaut, snipers, shotguns, mitrailleuses, SMG)
+- 🎯 Catalogue d'armes complet (54 armes: pistolets, fusils d'assaut, snipers, shotguns, mitrailleuses, SMG)
 - 📍 Système de localisation avec déplacement et couvertures
 - 💰 Économie de jeu avec achat d'armes
-- ⚡ Système d'énergie et de vie
+- ⚡ Système d'énergie et de vie avec barres ▰▱
 - 💀 Système de mort avec suppression de messages pendant 1 heure
-- 🌐 Interface web pour scanner le QR code WhatsApp
+- 🌐 Interface web style Call of Duty pour scanner le QR code WhatsApp
+- 🎮 Compatible groupes WhatsApp avec statistiques individuelles par joueur
 
 ## Commandes du Bot
 - `/statut` - Afficher le statut du joueur (vie, énergie, arme, position)
