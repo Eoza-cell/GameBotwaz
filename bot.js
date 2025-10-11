@@ -98,100 +98,100 @@ async function connectToWhatsApp() {
       if (type !== 'notify') return;
 
       for (const msg of messages) {
-      if (!msg.message) continue;
-      if (msg.key.fromMe) continue;
+        if (!msg.message) continue;
+        if (msg.key.fromMe) continue;
 
-      const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
-      const chatId = msg.key.remoteJid;
-      const isGroup = chatId.endsWith('@g.us');
-      const playerId = isGroup ? msg.key.participant : chatId;
+        const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
+        const chatId = msg.key.remoteJid;
+        const isGroup = chatId.endsWith('@g.us');
+        const playerId = isGroup ? msg.key.participant : chatId;
 
-      const respawnCheck = gameManager.checkRespawn(playerId);
-      if (!respawnCheck.canRespawn) {
-        if (text.startsWith('/')) {
-          await sock.sendMessage(chatId, { text: respawnCheck.message });
-        }
-        
-        try {
-          await sock.sendMessage(chatId, { delete: msg.key });
-        } catch (err) {
-          console.log('Erreur suppression message:', err);
-        }
-        continue;
-      }
-
-      if (text === '/statut') {
-        const status = gameManager.getStatus(playerId);
-        await sock.sendMessage(chatId, { text: status });
-      }
-      else if (text === '/boutique') {
-        const shop = gameManager.getShopMessage();
-        await sock.sendMessage(chatId, { text: shop });
-      }
-      else if (text.startsWith('/acheter ')) {
-        const weaponId = text.split(' ')[1];
-        const result = gameManager.buyWeapon(playerId, weaponId);
-        await sock.sendMessage(chatId, { text: result.message });
-      }
-      else if (text.startsWith('/equiper ')) {
-        const weaponId = text.split(' ')[1];
-        const result = gameManager.equipWeapon(playerId, weaponId);
-        await sock.sendMessage(chatId, { text: result.message });
-      }
-      else if (text === '/localisation' || text === '/bouger') {
-        const result = gameManager.move(playerId);
-        await sock.sendMessage(chatId, { text: result.message });
-      }
-      else if (text.startsWith('/tire')) {
-        const quotedMsg = msg.message.extendedTextMessage?.contextInfo?.participant;
-        
-        if (!quotedMsg) {
-          await sock.sendMessage(chatId, { 
-            text: '❌ Répondez au message de votre cible avec /tire [partie]\nParties: tete, torse, bras, jambes, pieds\nExemple: /tire tete' 
-          });
+        const respawnCheck = gameManager.checkRespawn(playerId);
+        if (!respawnCheck.canRespawn) {
+          if (text.startsWith('/')) {
+            await sock.sendMessage(chatId, { text: respawnCheck.message });
+          }
+          
+          try {
+            await sock.sendMessage(chatId, { delete: msg.key });
+          } catch (err) {
+            console.log('Erreur suppression message:', err);
+          }
           continue;
         }
 
-        const parts = text.split(' ');
-        const bodyPart = parts[1] || 'torse';
-        
-        const result = gameManager.shoot(playerId, quotedMsg, bodyPart);
-        await sock.sendMessage(chatId, { text: result.message });
-
-        if (result.killed) {
-          gameManager.deadPlayers.set(quotedMsg, Date.now());
-          
-          setTimeout(async () => {
-            const respawn = gameManager.checkRespawn(quotedMsg);
-            if (respawn.canRespawn) {
-              const targetChatId = isGroup ? chatId : quotedMsg;
-              await sock.sendMessage(targetChatId, { text: respawn.message });
-            }
-          }, 60 * 60 * 1000);
+        if (text === '/statut') {
+          const status = gameManager.getStatus(playerId);
+          await sock.sendMessage(chatId, { text: status });
         }
-      }
-      else if (text === '/aide' || text === '/help') {
-        const help = `🎮 ═══ COMMANDES DU JEU ═══\n\n` +
-          `📊 /statut - Voir votre statut\n` +
-          `🔫 /tire [partie] - Tirer sur un ennemi (répondre à son message)\n` +
-          `     Parties: tete, torse, bras, jambes, pieds\n` +
-          `📍 /localisation - Se déplacer\n` +
-          `🛒 /boutique - Voir les armes disponibles\n` +
-          `💰 /acheter [id] - Acheter une arme\n` +
-          `🔄 /equiper [id] - Équiper une arme\n` +
-          `❓ /aide - Afficher cette aide\n\n` +
-          `💡 Astuce: Déplacez-vous pour trouver des couvertures!`;
-        
-        await sock.sendMessage(chatId, { text: help });
-      }
+        else if (text === '/boutique') {
+          const shop = gameManager.getShopMessage();
+          await sock.sendMessage(chatId, { text: shop });
+        }
+        else if (text.startsWith('/acheter ')) {
+          const weaponId = text.split(' ')[1];
+          const result = gameManager.buyWeapon(playerId, weaponId);
+          await sock.sendMessage(chatId, { text: result.message });
+        }
+        else if (text.startsWith('/equiper ')) {
+          const weaponId = text.split(' ')[1];
+          const result = gameManager.equipWeapon(playerId, weaponId);
+          await sock.sendMessage(chatId, { text: result.message });
+        }
+        else if (text === '/localisation' || text === '/bouger') {
+          const result = gameManager.move(playerId);
+          await sock.sendMessage(chatId, { text: result.message });
+        }
+        else if (text.startsWith('/tire')) {
+          const quotedMsg = msg.message.extendedTextMessage?.contextInfo?.participant;
+          
+          if (!quotedMsg) {
+            await sock.sendMessage(chatId, { 
+              text: '❌ Répondez au message de votre cible avec /tire [partie]\nParties: tete, torse, bras, jambes, pieds\nExemple: /tire tete' 
+            });
+            continue;
+          }
+
+          const parts = text.split(' ');
+          const bodyPart = parts[1] || 'torse';
+          
+          const result = gameManager.shoot(playerId, quotedMsg, bodyPart);
+          await sock.sendMessage(chatId, { text: result.message });
+
+          if (result.killed) {
+            gameManager.deadPlayers.set(quotedMsg, Date.now());
+            
+            setTimeout(async () => {
+              const respawn = gameManager.checkRespawn(quotedMsg);
+              if (respawn.canRespawn) {
+                const targetChatId = isGroup ? chatId : quotedMsg;
+                await sock.sendMessage(targetChatId, { text: respawn.message });
+              }
+            }, 60 * 60 * 1000);
+          }
+        }
+        else if (text === '/aide' || text === '/help') {
+          const help = `🎮 ═══ COMMANDES DU JEU ═══\n\n` +
+            `📊 /statut - Voir votre statut\n` +
+            `🔫 /tire [partie] - Tirer sur un ennemi (répondre à son message)\n` +
+            `     Parties: tete, torse, bras, jambes, pieds\n` +
+            `📍 /localisation - Se déplacer\n` +
+            `🛒 /boutique - Voir les armes disponibles\n` +
+            `💰 /acheter [id] - Acheter une arme\n` +
+            `🔄 /equiper [id] - Équiper une arme\n` +
+            `❓ /aide - Afficher cette aide\n\n` +
+            `💡 Astuce: Déplacez-vous pour trouver des couvertures!`;
+          
+          await sock.sendMessage(chatId, { text: help });
+        }
       }
     });
 
     return sock;
-  } finally {
-    if (!sock) {
-      isConnecting = false;
-    }
+  } catch (error) {
+    isConnecting = false;
+    console.error('❌ Erreur lors de la configuration:', error);
+    throw error;
   }
 }
 
