@@ -410,6 +410,137 @@ class GameManager {
     msg += `📝 /mission [id]`;
     return msg;
   }
+
+  checkRespawn(playerId) {
+    const player = this.getPlayer(playerId);
+    
+    if (player.vie <= 0) {
+      const tempsRestant = Math.ceil((3600000 - (Date.now() - player.tempsRespawn)) / 1000);
+      
+      if (tempsRestant > 0) {
+        const minutes = Math.floor(tempsRestant / 60);
+        const secondes = tempsRestant % 60;
+        return {
+          canRespawn: false,
+          message: `💀 Vous êtes mort! Réapparition dans ${minutes}m ${secondes}s`
+        };
+      } else {
+        player.vie = 100;
+        player.energie = 100;
+        return {
+          canRespawn: true,
+          message: `✅ Vous êtes réapparu! Vie et énergie restaurées.`
+        };
+      }
+    }
+    
+    return { canRespawn: true, message: '' };
+  }
+
+  getShopMessage() {
+    let msg = `🔫 ═══ ARMURERIE ═══\n\n`;
+    
+    msg += `🔫 PISTOLETS:\n`;
+    weapons.pistolets.forEach(w => {
+      msg += `  ${w.id} - ${w.nom}: ${w.prix}$ (${w.degats} dégâts)\n`;
+    });
+
+    msg += `\n🎯 FUSILS D'ASSAUT:\n`;
+    weapons.fusils_assaut.forEach(w => {
+      msg += `  ${w.id} - ${w.nom}: ${w.prix}$ (${w.degats} dégâts)\n`;
+    });
+
+    msg += `\n\n📝 /acheter [id]\n📝 /equiper [id]`;
+    return msg;
+  }
+
+  buyWeapon(playerId, weaponId) {
+    const player = this.getPlayer(playerId);
+    let weapon = null;
+    
+    for (const category of Object.values(weapons)) {
+      weapon = category.find(w => w.id === weaponId);
+      if (weapon) break;
+    }
+
+    if (!weapon) {
+      return { success: false, message: '❌ Arme introuvable!' };
+    }
+
+    if (player.inventaire.find(w => w.id === weaponId)) {
+      return { success: false, message: '❌ Vous possédez déjà cette arme!' };
+    }
+
+    if (player.argent < weapon.prix) {
+      return { success: false, message: `❌ Fonds insuffisants! Prix: ${weapon.prix}$` };
+    }
+
+    player.argent -= weapon.prix;
+    player.inventaire.push(weapon);
+    
+    return { 
+      success: true, 
+      message: `✅ ${weapon.nom} acheté!\n💰 Argent restant: ${player.argent}$` 
+    };
+  }
+
+  equipWeapon(playerId, weaponId) {
+    const player = this.getPlayer(playerId);
+    const weapon = player.inventaire.find(w => w.id === weaponId);
+    
+    if (!weapon) {
+      return { success: false, message: '❌ Vous ne possédez pas cette arme!' };
+    }
+
+    player.armeEquipee = weapon;
+    return { 
+      success: true, 
+      message: `✅ ${weapon.nom} équipé!` 
+    };
+  }
+
+  move(playerId) {
+    const player = this.getPlayer(playerId);
+    const locations = ['Rue principale', 'Ruelle sombre', 'Parc central', 'Zone industrielle', 'Plage', 'Centre-ville'];
+    const newLocation = locations[Math.floor(Math.random() * locations.length)];
+    
+    return {
+      success: true,
+      message: `📍 Vous vous déplacez vers: ${newLocation}\n🌍 ${player.ville}, ${pays[player.pays].nom}`
+    };
+  }
+
+  shoot(shooterId, targetId, bodyPart = 'torse') {
+    const shooter = this.getPlayer(shooterId);
+    const target = this.getPlayer(targetId);
+    
+    if (shooter.energie < 10) {
+      return { success: false, message: '❌ Pas assez d\'énergie pour tirer!' };
+    }
+
+    const part = bodyParts[bodyPart] || bodyParts.torse;
+    const degats = Math.floor(shooter.armeEquipee.degats * part.multiplicateur);
+    
+    target.vie -= degats;
+    shooter.energie -= 10;
+    
+    let message = `🔫 ${shooter.armeEquipee.nom}\n`;
+    message += `🎯 Tir en ${part.nom}\n`;
+    message += `💥 ${degats} dégâts\n`;
+    message += `❤️ Vie cible: ${Math.max(0, target.vie)}%`;
+
+    if (target.vie <= 0) {
+      target.vie = 0;
+      target.tempsRespawn = Date.now();
+      shooter.kills++;
+      target.deaths++;
+      shooter.xp += 100;
+      message += `\n\n💀 ÉLIMINATION!\n+100 XP`;
+      return { success: true, message, killed: true };
+    }
+
+    return { success: true, message, killed: false };
+  }
 }
 
 module.exports = { GameManager, weapons, bodyParts, vehicles, pays };

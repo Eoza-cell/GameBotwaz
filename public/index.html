@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COMBAT WARFARE - QR CODE</title>
+    <title>GTA WhatsApp - Bot de Jeu</title>
     <script src="/socket.io/socket.io.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pricedown:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,15 +14,15 @@
         }
 
         body {
-            font-family: 'Rajdhani', sans-serif;
-            background: #0a0a0a url('/background.jpg') center center/cover no-repeat fixed;
+            font-family: 'Bebas Neue', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0f0f1e 100%);
+            color: #00ff41;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            color: #00ff00;
-            position: relative;
+            justify-content: center;
             overflow: hidden;
+            position: relative;
         }
 
         body::before {
@@ -32,198 +32,75 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: 
-                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.03) 2px, rgba(0,255,0,0.03) 4px),
-                linear-gradient(135deg, rgba(10,10,10,0.92) 0%, rgba(26,26,26,0.85) 50%, rgba(15,26,15,0.88) 100%),
-                radial-gradient(ellipse at top, rgba(255,136,0,0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom, rgba(0,255,0,0.1) 0%, transparent 50%);
-            pointer-events: none;
+            background: url('/background.jpg') center/cover;
+            opacity: 0.1;
+            z-index: 0;
         }
 
         .container {
-            text-align: center;
-            background: rgba(10, 10, 10, 0.95);
-            border: 2px solid #ff8800;
-            border-image: linear-gradient(135deg, #ff8800, #00ff00, #ff8800) 1;
-            padding: 40px;
-            max-width: 600px;
-            width: 90%;
             position: relative;
-            box-shadow: 
-                0 0 30px rgba(255, 136, 0, 0.3),
-                inset 0 0 20px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            max-width: 800px;
+            width: 95%;
+            background: rgba(0, 0, 0, 0.85);
+            border: 3px solid #00ff41;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.3), inset 0 0 30px rgba(0, 255, 65, 0.1);
         }
 
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(135deg, #ff8800, #00ff00, #ff8800);
-            z-index: -1;
-            filter: blur(10px);
-            opacity: 0.3;
-        }
-
-        .corner {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #ff8800;
-        }
-
-        .corner.top-left {
-            top: -2px;
-            left: -2px;
-            border-right: none;
-            border-bottom: none;
-        }
-
-        .corner.top-right {
-            top: -2px;
-            right: -2px;
-            border-left: none;
-            border-bottom: none;
-        }
-
-        .corner.bottom-left {
-            bottom: -2px;
-            left: -2px;
-            border-right: none;
-            border-top: none;
-        }
-
-        .corner.bottom-right {
-            bottom: -2px;
-            right: -2px;
-            border-left: none;
-            border-top: none;
-        }
-
-        .title-container {
+        .gta-logo {
+            text-align: center;
             margin-bottom: 30px;
         }
 
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.8em;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ff8800, #ffaa00, #ff8800);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px rgba(255, 136, 0, 0.5);
-            letter-spacing: 4px;
-            margin-bottom: 5px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
+        .gta-logo h1 {
+            font-family: 'Pricedown', sans-serif;
+            font-size: 4em;
+            color: #00ff41;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41,
+                0 0 30px #00ff41,
+                3px 3px 0 #000,
+                -3px -3px 0 #000;
+            letter-spacing: 8px;
+            margin-bottom: 10px;
         }
 
         .subtitle {
-            font-size: 1.2em;
-            color: #00ff00;
-            font-weight: 600;
-            letter-spacing: 3px;
-            text-transform: uppercase;
+            font-size: 1.5em;
+            color: #00ffaa;
+            text-shadow: 0 0 10px #00ffaa;
+            letter-spacing: 4px;
         }
 
         .qr-container {
-            background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
-            padding: 25px;
-            margin: 30px auto;
-            display: inline-block;
-            border: 2px solid #00ff00;
-            box-shadow: 
-                0 0 20px rgba(0, 255, 0, 0.3),
-                inset 0 0 20px rgba(0, 255, 0, 0.05);
-            position: relative;
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: rgba(0, 255, 65, 0.05);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            min-height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .qr-container::before {
-            content: 'SCAN TO DEPLOY';
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #0a0a0a;
-            padding: 5px 15px;
-            font-size: 0.8em;
-            color: #ff8800;
-            font-weight: 700;
-            letter-spacing: 2px;
-        }
-
-        #qr-code {
-            max-width: 280px;
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .status {
-            margin-top: 25px;
-            padding: 15px 25px;
-            background: linear-gradient(90deg, rgba(255,136,0,0.1), rgba(0,255,0,0.1), rgba(255,136,0,0.1));
-            border-left: 4px solid #ff8800;
-            font-size: 1.2em;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-
-        .connected {
-            color: #00ff00;
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            animation: glow 1.5s ease-in-out infinite;
-        }
-
-        @keyframes glow {
-            0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
-            50% { text-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
-        }
-
-        .waiting {
-            color: #ff8800;
-            animation: blink 2s ease-in-out infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        .instructions {
-            margin-top: 25px;
-            padding: 20px;
-            background: rgba(255, 136, 0, 0.05);
-            border: 1px solid rgba(255, 136, 0, 0.3);
-            font-size: 0.95em;
-            line-height: 1.8;
-        }
-
-        .instructions strong {
-            color: #ff8800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .instructions p {
-            color: #aaa;
+        .qr-container img {
+            max-width: 300px;
+            border: 3px solid #00ff41;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
         }
 
         .loading {
-            display: inline-block;
+            border: 4px solid rgba(0, 255, 65, 0.2);
+            border-top: 4px solid #00ff41;
+            border-radius: 50%;
             width: 60px;
             height: 60px;
-            border: 4px solid rgba(0, 255, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: #00ff00;
-            border-right-color: #ff8800;
             animation: spin 1s linear infinite;
         }
 
@@ -231,132 +108,145 @@
             to { transform: rotate(360deg); }
         }
 
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 255, 65, 0.1);
+            border-left: 4px solid #00ff41;
+            font-size: 1.2em;
+            letter-spacing: 2px;
+        }
+
+        .status .connected { color: #00ff41; }
+        .status .waiting { color: #ffaa00; }
+
         .game-info {
             margin-top: 30px;
             padding: 25px;
-            background: linear-gradient(135deg, rgba(255,136,0,0.05), rgba(0,255,0,0.05));
-            border: 1px solid rgba(0, 255, 0, 0.3);
-            text-align: left;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
         }
 
         .game-info h3 {
+            color: #00ff41;
+            font-size: 2em;
             margin-bottom: 20px;
-            color: #ff8800;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.4em;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            border-bottom: 2px solid #ff8800;
-            padding-bottom: 10px;
+            text-shadow: 0 0 10px #00ff41;
+            letter-spacing: 3px;
         }
 
         .game-info ul {
             list-style: none;
-            padding-left: 0;
         }
 
         .game-info li {
-            padding: 12px 15px;
+            padding: 12px 20px;
             margin: 8px 0;
-            background: rgba(0, 0, 0, 0.4);
-            border-left: 3px solid #00ff00;
+            background: rgba(0, 255, 65, 0.1);
+            border-left: 4px solid #00ff41;
             font-size: 1.1em;
             transition: all 0.3s;
+            letter-spacing: 1px;
         }
 
         .game-info li:hover {
-            background: rgba(0, 255, 0, 0.1);
-            transform: translateX(5px);
+            background: rgba(0, 255, 65, 0.2);
+            transform: translateX(10px);
         }
 
         .game-info strong {
-            color: #00ff00;
-            font-weight: 700;
+            color: #00ffaa;
         }
 
-        .hud-line {
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .star {
             position: absolute;
-            background: #ff8800;
-            opacity: 0.3;
-        }
-
-        .hud-line.top {
-            top: 10px;
-            left: 50px;
-            right: 50px;
-            height: 1px;
-        }
-
-        .hud-line.bottom {
-            bottom: 10px;
-            left: 50px;
-            right: 50px;
-            height: 1px;
-        }
-
-        .hud-dot {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #ff8800;
+            width: 2px;
+            height: 2px;
+            background: #00ff41;
             border-radius: 50%;
+            animation: twinkle 3s infinite;
         }
 
-        .hud-dot.tl { top: 10px; left: 10px; }
-        .hud-dot.tr { top: 10px; right: 10px; }
-        .hud-dot.bl { bottom: 10px; left: 10px; }
-        .hud-dot.br { bottom: 10px; right: 10px; }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .corner-ui {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #00ff41;
+        }
+
+        .corner-ui.tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+        .corner-ui.tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+        .corner-ui.bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+        .corner-ui.br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="corner top-left"></div>
-        <div class="corner top-right"></div>
-        <div class="corner bottom-left"></div>
-        <div class="corner bottom-right"></div>
-        
-        <div class="hud-line top"></div>
-        <div class="hud-line bottom"></div>
-        <div class="hud-dot tl"></div>
-        <div class="hud-dot tr"></div>
-        <div class="hud-dot bl"></div>
-        <div class="hud-dot br"></div>
+    <div class="stars" id="stars"></div>
 
-        <div class="title-container">
-            <h1>COMBAT WARFARE</h1>
-            <div class="subtitle">▰ WhatsApp Tactical Ops ▰</div>
+    <div class="container">
+        <div class="corner-ui tl"></div>
+        <div class="corner-ui tr"></div>
+        <div class="corner-ui bl"></div>
+        <div class="corner-ui br"></div>
+
+        <div class="gta-logo">
+            <h1>GTA</h1>
+            <div class="subtitle">▰ WhatsApp Edition ▰</div>
         </div>
-        
+
         <div class="qr-container" id="qr-container">
             <div class="loading"></div>
         </div>
-        
-        <div class="status" id="status">
-            <span class="waiting">⚠ WAITING FOR QR CODE...</span>
-        </div>
 
-        <div class="instructions">
-            <p><strong>⚡ Deployment Instructions:</strong></p>
-            <p>1. Open WhatsApp on mobile device</p>
-            <p>2. Navigate to Settings > Linked Devices</p>
-            <p>3. Scan the QR code above to deploy</p>
+        <div class="status" id="status">
+            <span class="waiting">⚠ EN ATTENTE DU QR CODE...</span>
         </div>
 
         <div class="game-info">
-            <h3>⚔ TACTICAL COMMANDS</h3>
+            <h3>🎮 COMMANDES DU JEU</h3>
             <ul>
-                <li>📊 <strong>/statut</strong> - View combat status</li>
-                <li>🔫 <strong>/tire [target]</strong> - Engage enemy (reply to message)</li>
-                <li>📍 <strong>/localisation</strong> - Relocate position</li>
-                <li>🛒 <strong>/boutique</strong> - Access armory</li>
-                <li>💰 <strong>/acheter [id]</strong> - Purchase weapon</li>
-                <li>🔄 <strong>/equiper [id]</strong> - Equip loadout</li>
-                <li>❓ <strong>/aide</strong> - Command briefing</li>
+                <li>📊 <strong>/statut</strong> - Profil complet</li>
+                <li>🏆 <strong>/classement</strong> - Top joueurs</li>
+                <li>🚗 <strong>/garage</strong> - Véhicules disponibles</li>
+                <li>✈️ <strong>/voyage</strong> - Destinations mondiales</li>
+                <li>📋 <strong>/missions</strong> - 200 missions principales</li>
+                <li>🎯 <strong>/secondaires</strong> - 450 missions secondaires</li>
+                <li>🎭 <strong>/pnj</strong> - Interagir avec PNJ (IA)</li>
+                <li>🔫 <strong>/tire [partie]</strong> - Combat PvP</li>
+                <li>💰 <strong>/boutique</strong> - Armurerie</li>
+                <li>❓ <strong>/aide</strong> - Liste complète</li>
             </ul>
         </div>
     </div>
 
     <script>
+        // Création des étoiles
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+
         const socket = io();
         const qrContainer = document.getElementById('qr-container');
         const statusDiv = document.getElementById('status');
@@ -364,20 +254,14 @@
         socket.on('qr-update', (qrDataUrl) => {
             if (qrDataUrl) {
                 qrContainer.innerHTML = `<img id="qr-code" src="${qrDataUrl}" alt="QR Code">`;
-                statusDiv.innerHTML = '<span class="waiting">📡 SCAN QR CODE TO CONNECT</span>';
+                statusDiv.innerHTML = '<span class="waiting">📱 SCANNEZ LE QR CODE POUR VOUS CONNECTER</span>';
             } else {
-                qrContainer.innerHTML = '<div style="padding: 60px; color: #00ff00; font-size: 3em; text-shadow: 0 0 20px rgba(0,255,0,0.5);">✓ DEPLOYED</div>';
-                statusDiv.innerHTML = '<span class="connected">✓ TACTICAL LINK ESTABLISHED</span>';
+                qrContainer.innerHTML = '<div style="font-size: 3em;">✅</div>';
+                statusDiv.innerHTML = '<span class="connected">✅ BOT CONNECTÉ - PRÊT À JOUER</span>';
             }
         });
 
-        socket.on('connect', () => {
-            console.log('Connecté au serveur');
-        });
-
-        socket.on('disconnect', () => {
-            statusDiv.innerHTML = '<span style="color: #ff0000; text-shadow: 0 0 10px rgba(255,0,0,0.5);">⚠ CONNECTION LOST</span>';
-        });
+        console.log('Connecté au serveur');
     </script>
 </body>
 </html>
