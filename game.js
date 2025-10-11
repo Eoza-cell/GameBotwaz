@@ -126,22 +126,23 @@ class GameManager {
 
   async genererTexteIA(prompt) {
     try {
-      const response = await axios.post(POLLINATIONS_TEXT_API, {
-        messages: [{ role: 'user', content: prompt }],
-        model: 'openai'
-      }, { timeout: 8000 });
+      const response = await axios.get(`${POLLINATIONS_TEXT_API}${encodeURIComponent(prompt)}`, {
+        timeout: 10000
+      });
       return response.data;
     } catch (error) {
-      return "...";
+      console.error('Erreur IA texte:', error.message);
+      return "Le système IA est temporairement indisponible.";
     }
   }
 
   async genererImageIA(description) {
     try {
       const encodedPrompt = encodeURIComponent(description);
-      const imageUrl = `${POLLINATIONS_IMAGE_API}${encodedPrompt}?width=512&height=512&nologo=true`;
+      const imageUrl = `${POLLINATIONS_IMAGE_API}${encodedPrompt}?width=800&height=600&nologo=true&model=flux`;
       return imageUrl;
     } catch (error) {
+      console.error('Erreur IA image:', error.message);
       return null;
     }
   }
