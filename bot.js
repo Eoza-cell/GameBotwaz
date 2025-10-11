@@ -28,47 +28,76 @@ function updateQRCode(qr) {
   }
 }
 
+let sock = null;
+let isConnecting = false;
+
 async function connectToWhatsApp() {
-  const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+  if (isConnecting) {
+    console.log('⏳ Connexion déjà en cours...');
+    return sock;
+  }
 
-  const sock = makeWASocket({
-    auth: state,
-    logger: pino({ level: 'silent' }),
-  });
+  isConnecting = true;
 
-  sock.ev.on('creds.update', saveCreds);
+  try {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
-  sock.ev.on('connection.update', (update) => {
-    const { connection, lastDisconnect, qr } = update;
+    sock = makeWASocket({
+      auth: state,
+      logger: pino({ level: 'silent' }),
+      printQRInTerminal: false,
+      defaultQueryTimeoutMs: undefined,
+      syncFullHistory: false,
+    });
 
-    if (qr) {
-      console.log('QR Code généré!');
-      updateQRCode(qr);
-    }
+    sock.ev.on('creds.update', saveCreds);
 
-    if (connection === 'close') {
-      const shouldReconnect = (lastDisconnect?.error instanceof Boom)
-        ? lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut
-        : true;
+    sock.ev.on('connection.update', async (update) => {
+      const { connection, lastDisconnect, qr } = update;
 
-      console.log('Connexion fermée, reconnexion...', shouldReconnect);
-
-      if (shouldReconnect) {
-        connectToWhatsApp();
+      if (qr) {
+        console.log('📱 QR Code généré!');
+        updateQRCode(qr);
       }
-    } else if (connection === 'open') {
-      console.log('✅ Bot WhatsApp connecté!');
-      qrCodeData = null;
-      if (qrUpdateCallback) {
-        qrUpdateCallback(null);
+
+      if (connection === 'close') {
+        isConnecting = false;
+        
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+        const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
+        console.log('❌ Connexion fermée:', statusCode, '- Reconnexion:', shouldReconnect);
+
+        if (shouldReconnect) {
+          setTimeout(() => {
+            console.log('🔄 Tentative de reconnexion...');
+            connectToWhatsApp();
+          }, 3000);
+        }
+      } else if (connection === 'open') {
+        isConnecting = false;
+        console.log('✅ Bot WhatsApp connecté!');
+        qrCodeData = null;
+        if (qrUpdateCallback) {
+          qrUpdateCallback(null);
+        }
+      } else if (connection === 'connecting') {
+        console.log('🔄 Connexion en cours...');
       }
-    }
-  });
+    });
+  } catch (error) {
+    isConnecting = false;
+    console.error('❌ Erreur de connexion:', error);
+    setTimeout(() => {
+      console.log('🔄 Nouvelle tentative de connexion...');
+      connectToWhatsApp();
+    }, 5000);
+  }
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return;
+      if (type !== 'notify') return;
 
-    for (const msg of messages) {
+      for (const msg of messages) {
       if (!msg.message) continue;
       if (msg.key.fromMe) continue;
 
@@ -155,10 +184,15 @@ async function connectToWhatsApp() {
         
         await sock.sendMessage(chatId, { text: help });
       }
-    }
-  });
+      }
+    });
 
-  return sock;
+    return sock;
+  } finally {
+    if (!sock) {
+      isConnecting = false;
+    }
+  }
 }
 
 module.exports = { connectToWhatsApp, setQRUpdateCallback };
