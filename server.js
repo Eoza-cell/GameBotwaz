@@ -34,4 +34,6 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🌐 Serveur web démarré sur http://0.0.0.0:${PORT}`);
   console.log(`📱 Scannez le QR code pour connecter le bot WhatsApp`);
+  console.log(`⏰ Compteur de temps activé: 1 jour = 3h réelles`);
+  console.log(`🎮 Mode GTA complet avec 650 missions + IA Pollinations`);
 });

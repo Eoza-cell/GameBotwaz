@@ -3,13 +3,24 @@ const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const qrcode = require('qrcode');
 const { GameManager } = require('./game');
+const cron = require('node-cron');
 
 const gameManager = new GameManager();
 let qrCodeData = null;
 let qrUpdateCallback = null;
 
+// Compteur de temps de jeu: 1min jeu = 3sec réel
 setInterval(() => {
-  gameManager.regenerateEnergy();
+  gameManager.updateGameTime();
+}, 3000);
+
+// Régénération énergie
+setInterval(() => {
+  gameManager.players.forEach(player => {
+    if (player.energie < 100) {
+      player.energie = Math.min(100, player.energie + 2);
+    }
+  });
 }, 30000);
 
 function setQRUpdateCallback(callback) {
@@ -124,6 +135,49 @@ async function connectToWhatsApp() {
         const status = gameManager.getStatus(playerId);
         await sock.sendMessage(chatId, { text: status });
       }
+      else if (text === '/classement') {
+        const classement = await gameManager.getClassement();
+        await sock.sendMessage(chatId, { text: classement });
+      }
+      else if (text === '/garage') {
+        const garage = gameManager.getGarageMenu();
+        await sock.sendMessage(chatId, { text: garage });
+      }
+      else if (text.startsWith('/achetervehicule ')) {
+        const vehiculeId = text.split(' ')[1];
+        const result = await gameManager.acheterVehicule(playerId, vehiculeId);
+        await sock.sendMessage(chatId, { text: result.message });
+      }
+      else if (text.startsWith('/monter ')) {
+        const vehiculeId = text.split(' ')[1];
+        const result = gameManager.monterVehicule(playerId, vehiculeId);
+        await sock.sendMessage(chatId, { text: result.message });
+      }
+      else if (text === '/demarrer') {
+        const result = gameManager.demarrerMoteur(playerId);
+        await sock.sendMessage(chatId, { text: result.message });
+      }
+      else if (text === '/voyage') {
+        const voyages = gameManager.getVoyageMenu();
+        await sock.sendMessage(chatId, { text: voyages });
+      }
+      else if (text.startsWith('/voyage ')) {
+        const paysId = text.split(' ')[1];
+        const result = await gameManager.acheterBillet(playerId, paysId);
+        await sock.sendMessage(chatId, { text: result.message });
+      }
+      else if (text === '/missions') {
+        const missions = gameManager.getMissionsMenu('main');
+        await sock.sendMessage(chatId, { text: missions });
+      }
+      else if (text === '/secondaires') {
+        const missions = gameManager.getMissionsMenu('side');
+        await sock.sendMessage(chatId, { text: missions });
+      }
+      else if (text === '/pnj' || text === '/interagir') {
+        const result = await gameManager.interagirPNJ(playerId);
+        await sock.sendMessage(chatId, { text: result.message });
+      }
       else if (text === '/boutique') {
         const shop = gameManager.getShopMessage();
         await sock.sendMessage(chatId, { text: shop });
@@ -171,16 +225,32 @@ async function connectToWhatsApp() {
         }
       }
       else if (text === '/aide' || text === '/help') {
-        const help = `🎮 ═══ COMMANDES DU JEU ═══\n\n` +
-          `📊 /statut - Voir votre statut\n` +
-          `🔫 /tire [partie] - Tirer sur un ennemi (répondre à son message)\n` +
-          `     Parties: tete, torse, bras, jambes, pieds\n` +
-          `📍 /localisation - Se déplacer\n` +
-          `🛒 /boutique - Voir les armes disponibles\n` +
-          `💰 /acheter [id] - Acheter une arme\n` +
-          `🔄 /equiper [id] - Équiper une arme\n` +
-          `❓ /aide - Afficher cette aide\n\n` +
-          `💡 Astuce: Déplacez-vous pour trouver des couvertures!`;
+        const help = `🎮 ═══ GTA WHATSAPP ═══\n\n` +
+          `📊 PROFIL\n` +
+          `/statut - Votre profil complet\n` +
+          `/classement - Top joueurs\n\n` +
+          `🚗 VÉHICULES\n` +
+          `/garage - Liste des véhicules\n` +
+          `/achetervehicule [id] - Acheter\n` +
+          `/monter [id] - Monter dedans\n` +
+          `/demarrer - Démarrer moteur\n\n` +
+          `✈️ VOYAGE\n` +
+          `/voyage - Liste destinations\n` +
+          `/voyage [pays] - Acheter billet\n\n` +
+          `📋 MISSIONS\n` +
+          `/missions - Principales (200)\n` +
+          `/secondaires - Secondaires (450)\n` +
+          `/mission [id] - Lancer mission\n\n` +
+          `🎭 MONDE\n` +
+          `/pnj - Interagir avec PNJ\n` +
+          `/attaquer - Attaquer PNJ\n` +
+          `/parler - Parler au PNJ\n` +
+          `/fuir - S'enfuir\n\n` +
+          `🔫 COMBAT\n` +
+          `/tire [partie] - Tirer\n` +
+          `/boutique - Armes\n` +
+          `/acheter [id] - Acheter arme\n\n` +
+          `⏰ 1 jour = 3h réelles`;
         
         await sock.sendMessage(chatId, { text: help });
       }
