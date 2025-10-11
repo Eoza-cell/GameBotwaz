@@ -184,6 +184,24 @@ async function connectToWhatsApp() {
         const result = await gameManager.interagirPNJ(playerId);
         await sock.sendMessage(chatId, { text: result.message });
       }
+      else if (text.startsWith('/mission ')) {
+        const missionId = text.split(' ')[1];
+        const result = await gameManager.lancerMission(playerId, missionId);
+        await sock.sendMessage(chatId, { text: result.message });
+        if (result.image) {
+          await sock.sendMessage(chatId, { 
+            image: { url: result.image },
+            caption: '🎯 Mission en cours'
+          });
+        }
+      }
+      else if (text === '/temps' || text === '/horloge') {
+        const player = gameManager.getPlayer(playerId);
+        const tempsJeu = gameManager.getTempsJeuFormate(player.tempsJeu);
+        await sock.sendMessage(chatId, { 
+          text: `⏰ TEMPS DE JEU\n\n📅 ${tempsJeu}\n⌛ 1 jour = 3h réelles\n\n💡 Le compteur tourne en permanence, même si vous ne jouez pas!` 
+        });
+      }
       else if (text === '/boutique') {
         const shop = gameManager.getShopMessage();
         await sock.sendMessage(chatId, { text: shop });
@@ -243,6 +261,24 @@ async function connectToWhatsApp() {
           }, 60 * 60 * 1000);
         }
       }
+      else if (text === '/attaquer') {
+        const result = await gameManager.attaquerPNJ(playerId);
+        await sock.sendMessage(chatId, { text: result.message });
+        if (result.image) {
+          await sock.sendMessage(chatId, { 
+            image: { url: result.image },
+            caption: '💥 Combat!'
+          });
+        }
+      }
+      else if (text === '/parler') {
+        const result = await gameManager.parlerPNJ(playerId);
+        await sock.sendMessage(chatId, { text: result.message });
+      }
+      else if (text === '/fuir') {
+        const result = await gameManager.fuirPNJ(playerId);
+        await sock.sendMessage(chatId, { text: result.message });
+      }
       else if (text.startsWith('/action ')) {
         const action = text.substring(8);
         const player = gameManager.getPlayer(playerId);
@@ -265,7 +301,8 @@ async function connectToWhatsApp() {
         const help = `🎮 ═══ GTA WHATSAPP ═══\n\n` +
           `📊 PROFIL\n` +
           `/statut - Votre profil complet\n` +
-          `/classement - Top joueurs\n\n` +
+          `/classement - Top joueurs\n` +
+          `/temps - Voir le compteur\n\n` +
           `🚗 VÉHICULES\n` +
           `/garage - Liste des véhicules\n` +
           `/achetervehicule [id] - Acheter\n` +
@@ -283,12 +320,14 @@ async function connectToWhatsApp() {
           `/attaquer - Attaquer PNJ\n` +
           `/parler - Parler au PNJ\n` +
           `/fuir - S'enfuir\n` +
+          `/bouger - Se déplacer\n` +
           `/action [texte] - Action libre IA\n\n` +
           `🔫 COMBAT\n` +
           `/tire [partie] - Tirer\n` +
           `/boutique - Armes\n` +
-          `/acheter [id] - Acheter arme\n\n` +
-          `⏰ 1 jour = 3h réelles`;
+          `/acheter [id] - Acheter arme\n` +
+          `/equiper [id] - Équiper arme\n\n` +
+          `⏰ 1 jour jeu = 3h réelles`;
         
         await sock.sendMessage(chatId, { text: help });
       }

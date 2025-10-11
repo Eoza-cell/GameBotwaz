@@ -573,6 +573,125 @@ class GameManager {
 
     return { success: true, message, killed: false, image: imageUrl };
   }
+
+  async lancerMission(phoneNumber, missionId) {
+    const player = this.getPlayer(phoneNumber);
+    let mission = null;
+    
+    mission = missionsPrincipales.find(m => m.id === missionId);
+    if (!mission) {
+      mission = missionsSecondaires.find(m => m.id === missionId);
+    }
+
+    if (!mission) {
+      return { success: false, message: '❌ Mission introuvable!' };
+    }
+
+    if (player.niveau < mission.niveau_requis) {
+      return { success: false, message: `❌ Niveau requis: ${mission.niveau_requis} (Vous: ${player.niveau})` };
+    }
+
+    if (player.missionsTerminees.includes(missionId)) {
+      return { success: false, message: '❌ Mission déjà terminée!' };
+    }
+
+    const contexte = `Tu es un narrateur de jeu GTA. Décris en 2-3 phrases immersives le début de la mission "${mission.nom}" dans ${player.ville}. Atmosphère intense.`;
+    const description = await this.genererTexteIA(contexte);
+    
+    const imagePrompt = `${mission.nom} mission scene in ${player.ville}, GTA style, cinematic, action`;
+    const imageUrl = await this.genererImageIA(imagePrompt);
+
+    player.missionsTerminees.push(missionId);
+    player.argent += mission.recompense;
+    player.xp += mission.xp;
+
+    return {
+      success: true,
+      message: `🎯 ${mission.nom}\n\n${description}\n\n✅ Mission terminée!\n💰 +${mission.recompense}$\n💎 +${mission.xp} XP\n\n💰 Total: ${player.argent}$\n💎 XP: ${player.xp}`,
+      image: imageUrl
+    };
+  }
+
+  async attaquerPNJ(phoneNumber) {
+    const player = this.getPlayer(phoneNumber);
+    const interactionActive = Array.from(this.interactions.values()).find(i => i.player === phoneNumber && i.actif);
+    
+    if (!interactionActive) {
+      return { success: false, message: '❌ Aucune interaction PNJ active! Utilisez /pnj d\'abord.' };
+    }
+
+    const pnj = interactionActive.pnj;
+    const degats = Math.floor(player.armeEquipee.degats * (Math.random() * 0.5 + 0.75));
+    
+    const contexte = `Décris en 2 phrases un combat entre un joueur avec ${player.armeEquipee.nom} et un ${pnj.type}. Le joueur inflige ${degats} dégâts. Style GTA, intense.`;
+    const description = await this.genererTexteIA(contexte);
+    
+    const imagePrompt = `Street fight with ${player.armeEquipee.nom} against ${pnj.type}, GTA style, action scene`;
+    const imageUrl = await this.genererImageIA(imagePrompt);
+
+    player.xp += 50;
+    player.argent += Math.floor(Math.random() * 300 + 100);
+    this.interactions.delete(Array.from(this.interactions.entries()).find(([k, v]) => v === interactionActive)[0]);
+
+    return {
+      success: true,
+      message: `⚔️ COMBAT!\n\n${description}\n\n💥 ${degats} dégâts infligés\n✅ ${pnj.type} éliminé\n\n💰 +${Math.floor(Math.random() * 300 + 100)}$\n💎 +50 XP`,
+      image: imageUrl
+    };
+  }
+
+  async parlerPNJ(phoneNumber) {
+    const player = this.getPlayer(phoneNumber);
+    const interactionActive = Array.from(this.interactions.values()).find(i => i.player === phoneNumber && i.actif);
+    
+    if (!interactionActive) {
+      return { success: false, message: '❌ Aucune interaction PNJ active! Utilisez /pnj d\'abord.' };
+    }
+
+    const pnj = interactionActive.pnj;
+    const contexte = `Tu es un ${pnj.type} dans un jeu GTA. Un joueur te parle. Réponds en 2 phrases selon ton personnage. Sois immersif.`;
+    const reponse = await this.genererTexteIA(contexte);
+
+    const recompense = Math.floor(Math.random() * 200 + 50);
+    player.argent += recompense;
+    player.xp += 25;
+    this.interactions.delete(Array.from(this.interactions.entries()).find(([k, v]) => v === interactionActive)[0]);
+
+    return {
+      success: true,
+      message: `💬 DIALOGUE\n\n${pnj.type}: "${reponse}"\n\n✅ Information obtenue\n💰 +${recompense}$\n💎 +25 XP`
+    };
+  }
+
+  async fuirPNJ(phoneNumber) {
+    const player = this.getPlayer(phoneNumber);
+    const interactionActive = Array.from(this.interactions.values()).find(i => i.player === phoneNumber && i.actif);
+    
+    if (!interactionActive) {
+      return { success: false, message: '❌ Aucune interaction PNJ active! Utilisez /pnj d\'abord.' };
+    }
+
+    const pnj = interactionActive.pnj;
+    const reussite = Math.random() > pnj.agressivite * 0.5;
+    
+    const contexte = `Décris en 1 phrase ${reussite ? 'une fuite réussie' : 'une fuite ratée avec dégâts'} face à un ${pnj.type}. Style GTA.`;
+    const description = await this.genererTexteIA(contexte);
+
+    this.interactions.delete(Array.from(this.interactions.entries()).find(([k, v]) => v === interactionActive)[0]);
+
+    if (reussite) {
+      return {
+        success: true,
+        message: `🏃 FUITE RÉUSSIE!\n\n${description}\n\n✅ Vous êtes en sécurité`
+      };
+    } else {
+      player.vie -= 30;
+      return {
+        success: true,
+        message: `🏃 FUITE RATÉE!\n\n${description}\n\n💔 -30 HP\n❤️ Vie: ${player.vie}%`
+      };
+    }
+  }
 }
 
 module.exports = { GameManager, weapons, bodyParts, vehicles, pays };
