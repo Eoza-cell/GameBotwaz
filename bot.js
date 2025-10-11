@@ -147,6 +147,12 @@ async function connectToWhatsApp() {
         const vehiculeId = text.split(' ')[1];
         const result = await gameManager.acheterVehicule(playerId, vehiculeId);
         await sock.sendMessage(chatId, { text: result.message });
+        if (result.image) {
+          await sock.sendMessage(chatId, { 
+            image: { url: result.image },
+            caption: `🚗 Votre nouveau véhicule!`
+          });
+        }
       }
       else if (text.startsWith('/monter ')) {
         const vehiculeId = text.split(' ')[1];
@@ -193,8 +199,14 @@ async function connectToWhatsApp() {
         await sock.sendMessage(chatId, { text: result.message });
       }
       else if (text === '/localisation' || text === '/bouger') {
-        const result = gameManager.move(playerId);
+        const result = await gameManager.move(playerId);
         await sock.sendMessage(chatId, { text: result.message });
+        if (result.image) {
+          await sock.sendMessage(chatId, { 
+            image: { url: result.image },
+            caption: '📍 Votre nouvelle localisation'
+          });
+        }
       }
       else if (text.startsWith('/tire')) {
         const quotedMsg = msg.message.extendedTextMessage?.contextInfo?.participant;
@@ -209,8 +221,15 @@ async function connectToWhatsApp() {
         const parts = text.split(' ');
         const bodyPart = parts[1] || 'torse';
         
-        const result = gameManager.shoot(playerId, quotedMsg, bodyPart);
+        const result = await gameManager.shoot(playerId, quotedMsg, bodyPart);
         await sock.sendMessage(chatId, { text: result.message });
+        
+        if (result.image) {
+          await sock.sendMessage(chatId, { 
+            image: { url: result.image },
+            caption: '💥 Action!'
+          });
+        }
 
         if (result.killed) {
           gameManager.deadPlayers.set(quotedMsg, Date.now());
@@ -222,6 +241,24 @@ async function connectToWhatsApp() {
               await sock.sendMessage(targetChatId, { text: respawn.message });
             }
           }, 60 * 60 * 1000);
+        }
+      }
+      else if (text.startsWith('/action ')) {
+        const action = text.substring(8);
+        const player = gameManager.getPlayer(playerId);
+        
+        const contexte = `Le joueur dans ${player.ville}, ${pays[player.pays].nom} fait l'action suivante: "${action}". Décris ce qui se passe en 2-3 phrases immersives, style GTA.`;
+        const description = await gameManager.genererTexteIA(contexte);
+        
+        const imagePrompt = `${action} in ${player.ville} city, GTA style, cinematic, action scene`;
+        const imageUrl = await gameManager.genererImageIA(imagePrompt);
+        
+        await sock.sendMessage(chatId, { text: `🎬 ${description}` });
+        if (imageUrl) {
+          await sock.sendMessage(chatId, { 
+            image: { url: imageUrl },
+            caption: '🎮 Votre action'
+          });
         }
       }
       else if (text === '/aide' || text === '/help') {
@@ -245,7 +282,8 @@ async function connectToWhatsApp() {
           `/pnj - Interagir avec PNJ\n` +
           `/attaquer - Attaquer PNJ\n` +
           `/parler - Parler au PNJ\n` +
-          `/fuir - S'enfuir\n\n` +
+          `/fuir - S'enfuir\n` +
+          `/action [texte] - Action libre IA\n\n` +
           `🔫 COMBAT\n` +
           `/tire [partie] - Tirer\n` +
           `/boutique - Armes\n` +

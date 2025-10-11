@@ -2,7 +2,8 @@
 const axios = require('axios');
 
 // Configuration Pollinations AI
-const POLLINATIONS_API = 'https://text.pollinations.ai/';
+const POLLINATIONS_TEXT_API = 'https://text.pollinations.ai/';
+const POLLINATIONS_IMAGE_API = 'https://image.pollinations.ai/prompt/';
 
 // Divisions et classements
 const divisions = {
@@ -125,13 +126,23 @@ class GameManager {
 
   async genererTexteIA(prompt) {
     try {
-      const response = await axios.post(POLLINATIONS_API, {
+      const response = await axios.post(POLLINATIONS_TEXT_API, {
         messages: [{ role: 'user', content: prompt }],
         model: 'openai'
-      }, { timeout: 5000 });
+      }, { timeout: 8000 });
       return response.data;
     } catch (error) {
-      return "Le PNJ reste silencieux...";
+      return "...";
+    }
+  }
+
+  async genererImageIA(description) {
+    try {
+      const encodedPrompt = encodeURIComponent(description);
+      const imageUrl = `${POLLINATIONS_IMAGE_API}${encodedPrompt}?width=512&height=512&nologo=true`;
+      return imageUrl;
+    } catch (error) {
+      return null;
     }
   }
 
@@ -220,9 +231,16 @@ class GameManager {
     player.argent -= vehicule.prix;
     player.vehicules.push({ ...vehicule, essence: vehicule.essence });
     
+    const contexteAchat = `Tu es un vendeur de voitures dans ${player.ville}. Un client vient d'acheter une ${vehicule.nom}. Décris la scène d'achat en 2 phrases immersives et enthousiastes.`;
+    const descriptionIA = await this.genererTexteIA(contexteAchat);
+    
+    const imagePrompt = `${vehicule.nom} luxury car in ${player.ville} city, cinematic, photorealistic, GTA style`;
+    const imageUrl = await this.genererImageIA(imagePrompt);
+    
     return { 
       success: true, 
-      message: `✅ ${vehicule.nom} acheté!\n💰 Argent restant: ${player.argent}$\n📝 Utilisez /demarrer pour démarrer le moteur` 
+      message: `✅ ${vehicule.nom} acheté!\n\n${descriptionIA}\n\n💰 Argent restant: ${player.argent}$\n📝 /demarrer pour démarrer`,
+      image: imageUrl
     };
   }
 
@@ -499,18 +517,25 @@ class GameManager {
     };
   }
 
-  move(playerId) {
+  async move(playerId) {
     const player = this.getPlayer(playerId);
     const locations = ['Rue principale', 'Ruelle sombre', 'Parc central', 'Zone industrielle', 'Plage', 'Centre-ville'];
     const newLocation = locations[Math.floor(Math.random() * locations.length)];
     
+    const contexte = `Décris en 2 phrases l'ambiance et l'atmosphère quand un personnage arrive à "${newLocation}" dans ${player.ville}, ${pays[player.pays].nom}. Style GTA, immersif.`;
+    const description = await this.genererTexteIA(contexte);
+    
+    const imagePrompt = `${newLocation} in ${player.ville}, ${pays[player.pays].nom}, GTA style, cinematic lighting, urban environment`;
+    const imageUrl = await this.genererImageIA(imagePrompt);
+    
     return {
       success: true,
-      message: `📍 Vous vous déplacez vers: ${newLocation}\n🌍 ${player.ville}, ${pays[player.pays].nom}`
+      message: `📍 ${newLocation}\n🌍 ${player.ville}, ${pays[player.pays].nom}\n\n${description}`,
+      image: imageUrl
     };
   }
 
-  shoot(shooterId, targetId, bodyPart = 'torse') {
+  async shoot(shooterId, targetId, bodyPart = 'torse') {
     const shooter = this.getPlayer(shooterId);
     const target = this.getPlayer(targetId);
     
@@ -524,10 +549,17 @@ class GameManager {
     target.vie -= degats;
     shooter.energie -= 10;
     
+    const contexte = `Décris en 1 phrase courte et percutante un tir de ${shooter.armeEquipee.nom} qui touche la ${part.nom}. Style action, intense.`;
+    const description = await this.genererTexteIA(contexte);
+    
     let message = `🔫 ${shooter.armeEquipee.nom}\n`;
-    message += `🎯 Tir en ${part.nom}\n`;
+    message += `🎯 ${part.nom}\n\n`;
+    message += `${description}\n\n`;
     message += `💥 ${degats} dégâts\n`;
     message += `❤️ Vie cible: ${Math.max(0, target.vie)}%`;
+
+    const imagePrompt = `${shooter.armeEquipee.nom} gun shooting action scene, GTA style, cinematic, muzzle flash`;
+    const imageUrl = await this.genererImageIA(imagePrompt);
 
     if (target.vie <= 0) {
       target.vie = 0;
@@ -536,10 +568,10 @@ class GameManager {
       target.deaths++;
       shooter.xp += 100;
       message += `\n\n💀 ÉLIMINATION!\n+100 XP`;
-      return { success: true, message, killed: true };
+      return { success: true, message, killed: true, image: imageUrl };
     }
 
-    return { success: true, message, killed: false };
+    return { success: true, message, killed: false, image: imageUrl };
   }
 }
 
