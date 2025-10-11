@@ -2,7 +2,7 @@ const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = requi
 const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const qrcode = require('qrcode');
-const { GameManager } = require('./game');
+const { GameManager, pays } = require('./game');
 const cron = require('node-cron');
 
 const gameManager = new GameManager();

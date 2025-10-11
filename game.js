@@ -695,4 +695,4 @@ class GameManager {
   }
 }
 
-module.exports = { GameManager, weapons, bodyParts, vehicles, pays };
+module.exports = { GameManager, weapons, bodyParts, vehicles, pays, missionsPrincipales, missionsSecondaires };
