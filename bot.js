@@ -1,4 +1,4 @@
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, Browsers } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const qrcode = require('qrcode');
@@ -52,13 +52,25 @@ async function connectToWhatsApp() {
 
   try {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    const { version, isLatest } = await fetchLatestBaileysVersion();
+    
+    console.log(`🔌 Utilisation de WhatsApp Web v${version.join('.')}, isLatest: ${isLatest}`);
 
     sock = makeWASocket({
+      version,
       auth: state,
       logger: pino({ level: 'silent' }),
       printQRInTerminal: false,
+      browser: ['Ubuntu', 'Chrome', '141.0.7390.65'],
       defaultQueryTimeoutMs: undefined,
       syncFullHistory: false,
+      connectTimeoutMs: 60000,
+      keepAliveIntervalMs: 10000,
+      markOnlineOnConnect: true,
+      getMessage: async (key) => {
+        console.log('⚠️ Message non déchiffré, retry demandé:', key);
+        return { conversation: '🔄 Réessaye d\'envoyer ton message' };
+      }
     });
 
     sock.ev.on('creds.update', saveCreds);
